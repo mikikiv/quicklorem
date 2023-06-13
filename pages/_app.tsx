@@ -9,15 +9,21 @@ import {
   Group,
   Header,
   MantineProvider,
+  MediaQuery,
+  Navbar,
+  ScrollArea,
+  Text,
   Title,
 } from "@mantine/core"
 import { useHotkeys, useLocalStorage } from "@mantine/hooks"
 import Logo from "../components/logo"
 import ColorSwitcher from "../components/ColorSwitcher"
 import Link from "next/link"
-import { IconBrandGithub } from "@tabler/icons-react"
+import { IconBrandGithub, IconHistory, IconX } from "@tabler/icons-react"
 import HomepageHero from "../components/HomepageHero"
 import Script from "next/script"
+import CopyHistory from "@/components/CopyHistory"
+import { useState } from "react"
 
 export default function App(props: AppProps) {
   const { Component, pageProps } = props
@@ -82,6 +88,9 @@ function Layout({
   children: React.ReactNode
   [x: string]: any
 }) {
+  const sidebarScreenSize = "xs"
+  const [opened, setOpened] = useState(false)
+
   return (
     <AppShell
       padding="md"
@@ -114,6 +123,37 @@ function Layout({
           </Group>
         </Header>
       }
+      navbarOffsetBreakpoint={sidebarScreenSize}
+      asideOffsetBreakpoint={sidebarScreenSize}
+      navbar={
+        <Navbar
+          hiddenBreakpoint={sidebarScreenSize}
+          hidden={!opened}
+          width={{ xs: "28.2%", xl: 400 }}
+          p="xl"
+          fixed={true}
+        >
+          <Navbar.Section>
+            <MediaQuery
+              largerThan={sidebarScreenSize}
+              styles={{ display: "none" }}
+            >
+              <Button
+                aria-label="Close"
+                onClick={() => setOpened((o) => !o)}
+                variant="subtle"
+                leftIcon={<IconX />}
+              >
+                Close
+              </Button>
+            </MediaQuery>
+            <Title>Copy History</Title>
+          </Navbar.Section>
+          <Navbar.Section grow mt="xs" component={ScrollArea}>
+            <CopyHistory />
+          </Navbar.Section>
+        </Navbar>
+      }
       footer={
         <Footer height={100} fixed={false}>
           <Group
@@ -141,7 +181,18 @@ function Layout({
       }
       {...rest}
     >
-      {children}
+      <>
+        <MediaQuery largerThan={sidebarScreenSize} styles={{ display: "none" }}>
+          <Button
+            variant="subtle"
+            onClick={() => setOpened((o) => !o)}
+            leftIcon={<IconHistory size={24} />}
+          >
+            <Text style={{ cursor: "pointer" }}>View Copy History</Text>
+          </Button>
+        </MediaQuery>
+        {children}
+      </>
     </AppShell>
   )
 }
