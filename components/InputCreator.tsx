@@ -15,12 +15,7 @@ import {
 import {
   IconAlertCircle,
   IconCopy,
-  IconDoorExit,
-  IconEdit,
-  IconHomeCancel,
-  IconHttpDelete,
   IconMail,
-  IconPointerCancel,
   IconSettings,
   IconSettingsCancel,
   IconX,
@@ -38,6 +33,7 @@ export default function InputCreator({}: Props) {
   const [aliases, setAliases] = useState([] as Alias[])
   const [selectedAlias, setSelectedAlias] = useState("")
   const [aliasedEmail, setAliasedEmail] = useState("")
+  const [copied, setCopied] = useState(false)
 
   const addAliasToEmail = (email: string, alias: string) => {
     return email.split("@").join(`+${alias}@`)
@@ -81,6 +77,26 @@ export default function InputCreator({}: Props) {
     setAliases((current) => [...current, newAlias])
     localStorage.setItem("aliases", JSON.stringify([...aliases, newAlias]))
   }
+
+  const handleCopyEmail = (copiedValue: string) => {
+    setCopied(true)
+    const newEmail = {
+      id: Date.now().toString(),
+      value: copiedValue,
+    }
+    navigator.clipboard.writeText(copiedValue)
+    const copyHistory = localStorage.getItem("copyHistory")
+    if (copyHistory) {
+      localStorage.setItem(
+        "copyHistory",
+        JSON.stringify([...JSON.parse(copyHistory), newEmail])
+      )
+    }
+    setTimeout(() => {
+      setCopied(false)
+    }, 1000)
+  }
+
   const [editingAliases, setEditingAliases] = useState(false)
 
   const handleDeleteAlias = (alias: string) => {
@@ -203,24 +219,20 @@ export default function InputCreator({}: Props) {
               )}
             </Box>
           </Grid.Col>
-          <CopyButton value={aliasedEmail}>
-            {({ copied, copy }) => (
-              <>
-                <Button
-                  variant="outline"
-                  h={100}
-                  w={"100%"}
-                  mt={rem(10)}
-                  sx={{ float: "right" }}
-                  onClick={copy}
-                  rightIcon={<IconCopy />}
-                  disabled={!validateEmail(email) || email.length === 0}
-                >
-                  {copied ? `Copied ${aliasedEmail}` : `${aliasedEmail}`}
-                </Button>
-              </>
-            )}
-          </CopyButton>
+          <Button
+            variant={copied ? "light" : "outline"}
+            h={100}
+            w={"100%"}
+            mt={rem(10)}
+            sx={{ float: "right" }}
+            onClick={() => {
+              handleCopyEmail(aliasedEmail)
+            }}
+            rightIcon={<IconCopy />}
+            disabled={!validateEmail(email) || email.length === 0}
+          >
+            {copied ? `Copied ${aliasedEmail}` : `${aliasedEmail}`}
+          </Button>
         </Grid>
       </Container>
     </Card>
